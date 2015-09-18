@@ -2,9 +2,15 @@
 #include <Wire.h>
 #include <Adafruit_MotorShield.h>
 #include "utility/Adafruit_PWMServoDriver.h"
+#include "DistSensor.h"
 
 #define M_COUNT 13
 #define STEPMODE DOUBLE
+
+
+enum Modes {A, B, C, D};
+Modes currentMode = A;
+
 
 Adafruit_MotorShield S0(0x60);
 Adafruit_MotorShield S1(0x61); 
@@ -97,9 +103,30 @@ void setup()
 
 void loop()
 {
+	setMode();
 	for(int i=0; i<M_COUNT; i++){
 	   steppers[i].runSpeed(); 
 	}
+	switch(currentMode){
+		case A:
+
+		break;
+		case B:
+
+		break;
+		case C:
+
+		break;
+		case D:
+
+		break;
+	}
+}
+
+void setMode(Modes mode) {
+	if (mode == currentMode) return;
+	currentMode = mode;
+
 
 }
 
