@@ -6,11 +6,7 @@
 
 #define M_COUNT 13
 #define STEPMODE DOUBLE
-
-
-enum Modes {A, B, C, D};
-Modes currentMode = A;
-
+#define NUM_SENSOR 4
 
 Adafruit_MotorShield S0(0x60);
 Adafruit_MotorShield S1(0x61); 
@@ -84,8 +80,47 @@ AccelStepper steppers[M_COUNT] =
 	stepper13
 };
 
+DistSensor *distSensors[NUM_SENSOR];
+
+enum Modes {A, B, C, D};
+int currentMode = A;
+
+void setMode(int mode) {
+	if (mode == currentMode) return;
+	currentMode = mode;
+
+	switch(currentMode){
+		case A:
+
+		break;
+		case B:
+
+		break;
+		case C:
+
+		break;
+		case D:
+
+		break;
+	}
+}
+
+void checkMode() {
+	int mode = A;
+
+	for(int i=0; i<NUM_SENSOR; i++){
+		mode += distSensors[i]->inRange;
+	}
+
+	setMode(mode);
+}
+
 void setup()
 {
+	for(int i=0; i<NUM_SENSOR; i++){
+		distSensors[i] = new DistSensor();
+	}
+
 	S0.begin();
 	S1.begin();
 	S2.begin();
@@ -103,10 +138,10 @@ void setup()
 
 void loop()
 {
-	setMode();
-	for(int i=0; i<M_COUNT; i++){
-	   steppers[i].runSpeed(); 
-	}
+	checkMode();
+
+
+	//UPDATE MODE
 	switch(currentMode){
 		case A:
 
@@ -123,11 +158,19 @@ void loop()
 	}
 }
 
-void setMode(Modes mode) {
-	if (mode == currentMode) return;
-	currentMode = mode;
+void animationA() {
+	for(int i=0; i<M_COUNT; i++){
+	   steppers[i].runSpeed(); 
+	}	
+}
 
+void animationB() {
 
 }
 
+void animationC() {
 
+}
+void animationD() {
+
+}
