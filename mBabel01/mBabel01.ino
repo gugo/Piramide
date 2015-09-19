@@ -7,6 +7,7 @@
 #define M_COUNT 13
 #define STEPMODE DOUBLE
 #define NUM_SENSOR 4
+#define SPR 200
 
 Adafruit_MotorShield S0(0x60);
 Adafruit_MotorShield S1(0x61); 
@@ -91,29 +92,29 @@ void setMode(int mode) {
 
 	switch(currentMode){
 		case A:
-
+			initAnimateA();
 		break;
 		case B:
-
+			initAnimateB();
 		break;
 		case C:
-
+			initAnimateC();
 		break;
 		case D:
-
+			initAnimateD();
 		break;
 	}
 }
 
-void checkMode() {
-	int mode = A;
+// void checkMode() {
+// 	int mode = A;
 
-	for(int i=0; i<NUM_SENSOR; i++){
-		mode += distSensors[i]->inRange;
-	}
+// 	for(int i=0; i<NUM_SENSOR; i++){
+// 		mode += distSensors[i]->inRange;
+// 	}
 
-	setMode(mode);
-}
+// 	setMode(mode);
+// }
 
 void setup()
 {
@@ -129,48 +130,81 @@ void setup()
 	S5.begin();
 	S6.begin();
 
+	setMode(B);
 
-	for(int i=0; i<M_COUNT; i++){
-	   steppers[i].setSpeed(200 - i*20); 
-	}
+
+	
 
 }
 
 void loop()
 {
-	checkMode();
+	// checkMode();
 
 
 	//UPDATE MODE
 	switch(currentMode){
 		case A:
-
+			animationA();
 		break;
 		case B:
-
+			animationB();
 		break;
 		case C:
-
+			animationC();
 		break;
 		case D:
-
+			animationD();
 		break;
 	}
 }
+void initAnimateA(){
+	// for(int i=0; i<M_COUNT; i++){
+	// 	steppers[i].setSpeed(200 - i*20); 
+	// }
+
+}
 
 void animationA() {
+	// for(int i=0; i<M_COUNT; i++){
+	//    steppers[i].runSpeed(); 
+	// }	
+}
+
+
+void initAnimateB(){
 	for(int i=0; i<M_COUNT; i++){
-	   steppers[i].runSpeed(); 
-	}	
+
+		steppers[i].setMaxSpeed(800.0);
+  		steppers[i].setAcceleration(400.0);
+  		steppers[i].moveTo(SPR);
+	}
 }
 
 void animationB() {
+	for(int i=0; i<M_COUNT; i++){
+		if (steppers[i].distanceToGo() == 0)
+		 	steppers[i].moveTo(-steppers[i].currentPosition());
 
+	   	steppers[i].run(); 
+	}	
 }
+
+
+
+
+void initAnimateC(){}
 
 void animationC() {
 
 }
+
+void initAnimateD(){}
+
 void animationD() {
 
 }
+
+
+
+
