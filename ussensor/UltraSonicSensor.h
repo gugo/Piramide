@@ -16,6 +16,9 @@ public:
   float distance;
   void setEchoTime(long val);
   long echoTime;
+
+  void echoArrived();
+
 private:
   int trigPin;
   int echoPin;
@@ -47,7 +50,7 @@ public:
 
   int callBackDelayCount;
 
-  void echoCallBack();
+  void echoCallBack(int inx);
 
   static UltraSonicSensorManager* _instance;
 
@@ -60,8 +63,6 @@ private:
   long trigTime;
   int echoCounter;
 
-
-
-
+  void (* interruptFncs [4])();
 
 };

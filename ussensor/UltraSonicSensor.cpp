@@ -2,9 +2,24 @@
 
 UltraSonicSensorManager *UltraSonicSensorManager::_instance(NULL);
 
-void interruptCallback(){
+void interruptCallbackA(){
   UltraSonicSensorManager* ussm = UltraSonicSensorManager::instance();
-  ussm->echoCallBack();
+  ussm->echoCallBack(0);
+}
+
+void interruptCallbackB(){
+  UltraSonicSensorManager* ussm = UltraSonicSensorManager::instance();
+  ussm->echoCallBack(1);
+}
+
+void interruptCallbackC(){
+  UltraSonicSensorManager* ussm = UltraSonicSensorManager::instance();
+  ussm->echoCallBack(2);
+}
+
+void interruptCallbackD(){
+  UltraSonicSensorManager* ussm = UltraSonicSensorManager::instance();
+  ussm->echoCallBack(3);
 }
 
 UltraSonicSensor::UltraSonicSensor(int trigPin, int echoPin){
@@ -18,7 +33,7 @@ UltraSonicSensor::UltraSonicSensor(int trigPin, int echoPin){
 void UltraSonicSensor::setEchoTime(long val){
   echoTime = val;
   float d = (float)echoTime * SOS * .5;
-  distance += (d-distance)/5.0;
+  distance += (d-distance)/3.0;
 }
 
 UltraSonicSensorManager::UltraSonicSensorManager(
@@ -48,6 +63,12 @@ UltraSonicSensorManager::UltraSonicSensorManager(
   digitalWrite(trigPin, LOW );
   trigStatus = LOW;
   callBackDelayCount = 0;
+
+  interruptFncs[0] = interruptCallbackA;
+  interruptFncs[1] = interruptCallbackB;
+  interruptFncs[2] = interruptCallbackC;
+  interruptFncs[3] = interruptCallbackD;
+
 }
 
 void UltraSonicSensorManager::begin(){
@@ -56,7 +77,8 @@ void UltraSonicSensorManager::begin(){
   for(int i=0;i<numSensor;i++){
 
     int inter = digitalPinToInterrupt(echoPins[i]);
-    attachInterrupt(inter, interruptCallback, FALLING);
+
+    attachInterrupt(inter, interruptFncs[i], FALLING);
 
   }
 
@@ -109,12 +131,10 @@ void UltraSonicSensorManager::update(){
 
 }
 
-void UltraSonicSensorManager::echoCallBack(){
+void UltraSonicSensorManager::echoCallBack(int inx){
   long echoTime = micros() - trigTime;
 
-  if(echoCounter < numSensor){
-    sensors[echoCounter]->setEchoTime(echoTime);
-  }
+  sensors[inx]->setEchoTime(echoTime);
 
   echoCounter++;
 }
