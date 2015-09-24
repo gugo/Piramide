@@ -2,12 +2,23 @@
 #include <Wire.h>
 #include <Adafruit_MotorShield.h>
 #include "utility/Adafruit_PWMServoDriver.h"
-#include "DistSensor.h"
+#include "UltraSonicSensor.h"
 
 #define M_COUNT 13
 #define STEPMODE DOUBLE
 #define NUM_SENSOR 4
 #define SPR 200
+
+#define TRIG_PIN 42
+#define NUM_SENSOR 4
+#define DIST_MIN 20
+#define DIST_THRESHOLD 40
+
+int sensorPins[] = {18,  19,  2,  3}; //INTERRUPT PINS
+int sensorCounter = 0;
+float sensorAverage = 0.0;
+
+UltraSonicSensorManager *sensors = new UltraSonicSensorManager(TRIG_PIN,sensorPins, NUM_SENSOR, sensorUpdate);
 
 Adafruit_MotorShield S0(0x60);
 Adafruit_MotorShield S1(0x61); 
@@ -81,46 +92,26 @@ AccelStepper steppers[M_COUNT] =
 	stepper13
 };
 
-DistSensor *distSensors[NUM_SENSOR];
 
-enum Modes {A, B, C, D};
-int currentMode = A;
+enum Modes {A, B, C, D, E};
+int currentMode = 10;
 
-void setMode(int mode) {
-	if (mode == currentMode) return;
-	currentMode = mode;
+void checkMode() {
+	int mode = sensorCounter;
 
-	switch(currentMode){
-		case A:
-			initAnimateA();
-		break;
-		case B:
-			initAnimateB();
-		break;
-		case C:
-			initAnimateC();
-		break;
-		case D:
-			initAnimateD();
-		break;
-	}
+	setMode(mode);
 }
-
-// void checkMode() {
-// 	int mode = A;
-
-// 	for(int i=0; i<NUM_SENSOR; i++){
-// 		mode += distSensors[i]->inRange;
-// 	}
-
-// 	setMode(mode);
-// }
 
 void setup()
 {
-	for(int i=0; i<NUM_SENSOR; i++){
-		distSensors[i] = new DistSensor();
-	}
+	// pinMode(18, INPUT);
+	// pinMode(19, INPUT);
+	// pinMode(20, INPUT);
+	// pinMode(21, INPUT);
+	// pinMode(42, OUTPUT);
+	Serial.begin(57600);
+	sensors->begin();
+	Serial.println("<< ULTRASONICSOUND SENSORS >>");
 
 	S0.begin();
 	S1.begin();
@@ -130,21 +121,19 @@ void setup()
 	S5.begin();
 	S6.begin();
 
-	setMode(B);
-
-
-	
-
+	setMode(A);
 }
 
 void loop()
 {
-	// checkMode();
+	sensors->update();
+	checkMode();
 
 
 	//UPDATE MODE
 	switch(currentMode){
 		case A:
+			// Serial.println("LOOP case A");
 			animationA();
 		break;
 		case B:
@@ -156,32 +145,106 @@ void loop()
 		case D:
 			animationD();
 		break;
+		case E:
+			animationE();
+		break;
 	}
 }
-void initAnimateA(){
-	// for(int i=0; i<M_COUNT; i++){
-	// 	steppers[i].setSpeed(200 - i*20); 
-	// }
+
+void setMode(int mode) {
+	if (mode == currentMode) return;
+	currentMode = mode;
+
+	switch(currentMode){
+		case A:
+			// Serial.println("SETUP case A");
+			initAnimateA();
+		break;
+		case B:
+			initAnimateB();
+		break;
+		case C:
+			initAnimateC();
+		break;
+		case D:
+			initAnimateD();
+		break;
+		case E:
+			initAnimateE();
+		break;
+	}
+}
+
+void sensorUpdate(){
+sensorCounter = 0;
+sensorAverage = 0;
+  for( int i=0 ; i<NUM_SENSOR; i++ ){
+    Serial.print("s");
+    Serial.print(i);
+    Serial.print(":: ");
+    Serial.print( sensors->sensors[i]->distance );
+    Serial.print("cm\t\t");
+
+    if(sensors->sensors[i]->distance < DIST_THRESHOLD){
+      sensorCounter++;
+      sensorAverage += sensors->sensors[i]->distance;
+
+    }
+  }
+
+  if(sensorCounter > 0){
+    sensorAverage /= sensorCounter;
+    sensorAverage = ( sensorAverage - DIST_MIN ) / ( DIST_THRESHOLD - DIST_MIN ); 
+    sensorAverage = 1.0 - sensorAverage;
+    sensorAverage = min(sensorAverage, 1);
+    sensorAverage = max(sensorAverage, 0);
+  }else{
+    sensorAverage = 0;
+  }
+
+  Serial.print(":: ");
+  Serial.print(sensorCounter);
+  Serial.print("\tavrg\t");
+  Serial.println(sensorAverage);
+  
 
 }
 
-void animationA() {
-	// for(int i=0; i<M_COUNT; i++){
-	//    steppers[i].runSpeed(); 
-	// }	
-}
+void initAnimateA() {}
+
+void animationA() {}
 
 
 void initAnimateB(){
-	for(int i=0; i<M_COUNT; i++){
+	// steppers[0].setSpeed(60);
+	// Serial.println("initAnimateA");
 
-		steppers[i].setMaxSpeed(800.0);
-  		steppers[i].setAcceleration(400.0);
-  		steppers[i].moveTo(SPR);
+	for(int i=0; i<M_COUNT; i++){
+		steppers[i].setSpeed(130 - i*8); 
 	}
+
 }
 
 void animationB() {
+	
+	for(int i=0; i<M_COUNT; i++){
+	   steppers[i].runSpeed(); 
+	}
+
+	// steppers[1].runSpeed(); 
+}
+
+
+void initAnimateC(){
+	for(int i=0; i<M_COUNT; i++){
+
+		steppers[i].setMaxSpeed(130.0 - i*5);
+  		steppers[i].setAcceleration(100.0);
+  		steppers[i].moveTo(SPR*2);
+	}
+}
+
+void animationC() {
 	for(int i=0; i<M_COUNT; i++){
 		if (steppers[i].distanceToGo() == 0)
 		 	steppers[i].moveTo(-steppers[i].currentPosition());
@@ -190,19 +253,34 @@ void animationB() {
 	}	
 }
 
+void initAnimateD(){
+	for(int i=0; i<M_COUNT; i++){
 
-
-
-void initAnimateC(){}
-
-void animationC() {
-
+		steppers[i].setMaxSpeed(100 - i*3);
+  		steppers[i].setAcceleration(100.0);
+  		steppers[i].moveTo(SPR*1);
+	}
 }
 
-void initAnimateD(){}
-
 void animationD() {
+	for(int i=0; i<M_COUNT; i++){
+		if (steppers[i].distanceToGo() == 0)
+		 	steppers[i].moveTo(-steppers[i].currentPosition());
 
+	   	steppers[i].run(); 
+	}	
+}
+
+void initAnimateE(){
+	for(int i=0; i<M_COUNT; i++){
+		steppers[i].setSpeed(130 - i*8); 
+	}
+}
+
+void animationE() {
+	for(int i=0; i<M_COUNT; i++){
+	   steppers[i].runSpeed(); 
+	}
 }
 
 
