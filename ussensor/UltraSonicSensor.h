@@ -2,10 +2,9 @@
 
 #define UPDATE_INTERVAL 30000 //in microseconds
 #define TRIG_TIME 1000
-#define CALLBACK_EARY 5
+#define CALLBACK_EARY 3
+#define FILTER_SPEED 0.06 // MIN>0 MAX<=1
 #define SOS 0.034029
-
-
 
 
 class UltraSonicSensor

@@ -32,8 +32,8 @@ UltraSonicSensor::UltraSonicSensor(int trigPin, int echoPin){
 
 void UltraSonicSensor::setEchoTime(long val){
   echoTime = val;
-  float d = (float)echoTime * SOS * .5;
-  distance += (d-distance)/3.0;
+  float d = ((float)echoTime * SOS * .5) - 5.0;
+  distance += (d-distance) * FILTER_SPEED;
 }
 
 UltraSonicSensorManager::UltraSonicSensorManager(
@@ -97,7 +97,7 @@ void UltraSonicSensorManager::update(){
     // Serial.print(" echo::");
     // Serial.println(sensors[0]->echoTime);
 
-    if(callBackDelayCount >= CALLBACK_EARY){
+    if(callBackDelayCount > CALLBACK_EARY){
       callBackDelayCount = 0;
       _callback();
     }
