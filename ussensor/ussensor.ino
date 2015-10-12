@@ -6,7 +6,7 @@
 #define DIST_THRESHOLD 40
 
 
-int sensorPins[] = {18,  19,  20,  21}; //INTERRUPT PINS
+int sensorPins[] = {18,  19,  3,  2}; //INTERRUPT PINS
 
 UltraSonicSensorManager *sensors = new UltraSonicSensorManager(TRIG_PIN,sensorPins, NUM_SENSOR, sensorUpdate);
 
