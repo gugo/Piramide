@@ -6,8 +6,8 @@
 #include <Bounce2.h>
 
 #define M_COUNT 9
-#define STEPMODE DOUBLE	
-// #define STEPMODE MICROSTEP
+// #define STEPMODE DOUBLE	
+#define STEPMODE MICROSTEP
 #define NUM_SENSOR 4
 #define SPR 200
 #define TURN 1000
@@ -129,17 +129,17 @@ void checkMode() {
 
 void loop()
 {
-	setMode(A);
+	setMode(D);
 
-	for (int i = 0; i < M_COUNT; i++)
-	{
-		Serial.print("button :: ");
-		Serial.print(i);
-		Serial.print("\t - \t");
-		Serial.print("state :: ");
-		Serial.print(digitalRead(endStopPins[i]));
-		Serial.println(";");
-	}
+	// for (int i = 0; i < M_COUNT; i++)
+	// {
+	// 	Serial.print("button :: ");
+	// 	Serial.print(i);
+	// 	Serial.print("\t - \t");
+	// 	Serial.print("state :: ");
+	// 	Serial.print(digitalRead(endStopPins[i]));
+	// 	Serial.println(";");
+	// }
 
 	// UPDATE MODE
 	switch(currentMode){
@@ -178,7 +178,7 @@ void gugoToHome(){
 		debouncer.attach(endStopPins[i]);
   		debouncer.interval(1);
 
-		steppers[i].setSpeed(40);
+		steppers[i].setSpeed(400);
 
 		while(endStopHome[i]) {
 
@@ -191,7 +191,7 @@ void gugoToHome(){
 			if ( value == HIGH ) {
 				steppers[i].runSpeed();
 			} else {
-				delay(1000);
+				delay(200);
 				steppers[i].setCurrentPosition(0);
 				steppers[i].setSpeed(1);
 				endStopHome[i] = false;
@@ -257,7 +257,7 @@ void animationA() {
 void initAnimateB(){
 
 	for(int i=0; i<M_COUNT; i++){
-		steppers[i].setSpeed(400); 
+		steppers[i].setSpeed(60-(i*4)); 
 	}
 	Serial.println("Init B");
 }
@@ -292,13 +292,13 @@ void animationC() {
 void initAnimateD(){
 	for(int i=0; i<M_COUNT; i++){
 
-		steppers[i].setMaxSpeed(150);
-  		steppers[i].setAcceleration(100.0);
+  		steppers[i].setAcceleration(10.0);
+  		steppers[i].setMaxSpeed(40);
   		if(i%2==0){
-			steppers[i].moveTo(SPR*20); 
+			steppers[i].moveTo(TURN); 
 
 		} else{
-			steppers[i].moveTo(-SPR*20); 
+			steppers[i].moveTo(-TURN); 
 
 		}
 	}
